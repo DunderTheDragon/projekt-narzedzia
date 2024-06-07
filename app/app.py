@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template_string
 from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
@@ -9,13 +9,20 @@ class UserAge(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     age = db.Column(db.Integer, nullable=False)
 
-@app.route('/submit', methods=['POST'])
-def submit_age():
-    age = request.form['age']
-    user_age = UserAge(age=age)
-    db.session.add(user_age)
-    db.session.commit()
-    return "Age submitted successfully!"
+@app.route('/', methods=['GET', 'POST'])
+def index():
+    if request.method == 'POST':
+        age = request.form['age']
+        user_age = UserAge(age=age)
+        db.session.add(user_age)
+        db.session.commit()
+    return render_template_string('''
+        <form method="post">
+            <label for="age">Enter your age:</label>
+            <input type="number" id="age" name="age" required>
+            <input type="submit" value="Submit">
+        </form>
+    ''')
 
 @app.route('/average_age', methods=['GET'])
 def average_age():
